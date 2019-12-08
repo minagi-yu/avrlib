@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
