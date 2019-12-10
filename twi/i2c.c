@@ -23,7 +23,7 @@ static void i2c_reset()
     TWI0.MSTATUS |= TWI_BUSSTATE_IDLE_gc;
 }
 
-int i2c_send(uint8_t addr, void *data, size_t len)
+uint_fast8_t i2c_send(uint8_t addr, void *data, size_t len)
 {
     uint8_t *dp = data;
 
