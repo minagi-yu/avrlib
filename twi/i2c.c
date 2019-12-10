@@ -38,7 +38,7 @@ uint_fast8_t i2c_send(uint8_t addr, void *data, size_t len)
 
         i2c_wait();
 
-        if (TWI0.MSTATUS & TWI_ARBLOST_bm) {
+        if (TWI0.MSTATUS & (TWI_ARBLOST_bm | TWI_BUSERR_bm)) {
             i2c_reset();
             return 1;
         }
@@ -50,7 +50,7 @@ uint_fast8_t i2c_send(uint8_t addr, void *data, size_t len)
 
         i2c_wait();
 
-        if (TWI0.MSTATUS & TWI_ARBLOST_bm) {
+        if (TWI0.MSTATUS & (TWI_ARBLOST_bm | TWI_BUSERR_bm)) {
             i2c_reset();
             return 1;
         }
@@ -58,6 +58,55 @@ uint_fast8_t i2c_send(uint8_t addr, void *data, size_t len)
         if (TWI0.MSTATUS & TWI_RXACK_bm)
             break;
     } while (--len);
+
+    TWI0.MCTRLB |= TWI_MCMD_STOP_gc;
+
+    return 0;
+}
+
+uint_fast8_t i2c_read(uint8_t addr, void *data, size_t len)
+{
+    uint8_t *dp = data;
+
+    if (len == 0)
+        return 1;
+
+    i2c_reset();
+    TWI0.MSTATUS |= (TWI_RIF_bm | TWI_WIF_bm);
+
+    do {
+        TWI0.MADDR = addr << 1 | 1;
+
+        i2c_wait();
+
+        if (TWI0.MSTATUS & (TWI_ARBLOST_bm | TWI_BUSERR_bm)) {
+            i2c_reset();
+            return 1;
+        }
+    } while (TWI0.MSTATUS & TWI_RXACK_bm); // NACK: rewrite address
+
+    // ACK: read data
+    do {
+        if (len == 1)
+            TWI0.MCTRLB = TWI_ACKACT_NACK_gc;
+        else
+            TWI0.MCTRLB = TWI_ACKACT_ACK_gc;
+
+        *dp++ = TWI0.MDATA;
+        len--;
+
+        if (len == 0)
+            break;
+
+        TWI0.MCTRLB |= TWI_MCMD_RECVTRANS_gc;
+
+        i2c_wait();
+
+        if (TWI0.MSTATUS & (TWI_ARBLOST_bm | TWI_BUSERR_bm)) {
+            i2c_reset();
+            return 1;
+        }
+    } while (1);
 
     TWI0.MCTRLB |= TWI_MCMD_STOP_gc;
 
