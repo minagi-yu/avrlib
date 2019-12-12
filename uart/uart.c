@@ -18,7 +18,7 @@ static volatile struct uart_buffer {
     uint8_t buff[UART_BUFFER_SIZE];
 } rx_buff, tx_buff;
 
-void uart_init()
+void uart_init(void)
 {
     rx_buff = tx_buff = (struct uart_buffer){ 0 };
 
@@ -51,7 +51,7 @@ void uart_putc(uint8_t c)
     tx_buff.cnt++;
     sei();
 
-    USART0.CTRLA != USART_DREIE_bm;
+    USART0.CTRLA |= USART_DREIE_bm;
 }
 
 uint8_t uart_getc(void)
