@@ -9,7 +9,7 @@
 #define I2C_FM 400000
 #define I2C_FMPLUS 1000000
 
-void i2c_init(int khz);
+void i2c_init(int hz);
 uint_fast8_t i2c_write(uint8_t addr, void *data, size_t len);
 uint_fast8_t i2c_read(uint8_t addr, void *data, size_t len);
 
